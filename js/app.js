@@ -33,10 +33,6 @@ const closeRecordsBtn = document.querySelector("#closeRecordsBtn");
 const sideBarContent = document.querySelector("#sideBarContent");
 
 // Events
-window.addEventListener("load", () => {
-  loanDateInput.valueAsDate = new Date();
-});
-
 loanDateInput.addEventListener("input", (e) => {
   state.loanDate = e.target.value;
 });
