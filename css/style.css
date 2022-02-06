@@ -330,6 +330,14 @@ a.brand-logo {
   background-color: var(--danger-color);
 }
 
+.btn-add {
+  border: none;
+  width: 100%;
+  padding: 12px;
+  font-size: 18px;
+  font-weight: 700;
+}
+
 .btn-records {
   border: none;
   font-weight: 700;

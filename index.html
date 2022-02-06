@@ -23,6 +23,14 @@
       media="all"
     />
 
+    <!-- VexJS -->
+    <script src="js/vex.combined.js"></script>
+    <script>vex.defaultOptions.className = 'vex-theme-os'</script>
+
+    <!-- Vex Stylesheet -->
+    <link rel="stylesheet" href="css/vex.css" type="text/css" media="all" />
+    <link rel="stylesheet" href="css/vex-theme-os.css" type="text/css" media="all" />
+
     <!-- CSS Stylesheet -->
     <link rel="stylesheet" href="css/style.css" type="text/css" media="all" />
   </head>
@@ -142,11 +150,14 @@
               </div>
               <div class="detail">
                 <p>Total Interest</p>
-                <p id="showTotalInterest">Rs. 0</p>
+                <p>Rs. <span id="showTotalInterest">0</span></p>
               </div>
               <div class="detail">
                 <p>Total Amount</p>
-                <p id="showTotalAmount">Rs. 0</p>
+                <p>Rs. <span id="showTotalAmount">0</span></p>
+              </div>
+              <div>
+                <button class="btn-add" id="addRecordBtn" disabled>Add new record</button>
               </div>
             </div>
           </div>

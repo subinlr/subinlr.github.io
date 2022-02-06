@@ -8,10 +8,14 @@ if ("serviceWorker" in navigator) {
 
 // State
 const state = {
-  loanDate: "",
-  loanAmount: "",
-  rateOfInterest: "",
-  tenure: "",
+  loanDetails: {
+    loanDate: "",
+    loanAmount: "",
+    rateOfInterest: "",
+    tenure: "",
+  },
+  EMI: null,
+  records: [],
 };
 
 // Elements
@@ -31,44 +35,50 @@ const sideBar = document.querySelector("#sideBar");
 const viewRecordsBtn = document.querySelector("#viewRecordsBtn");
 const closeRecordsBtn = document.querySelector("#closeRecordsBtn");
 const sideBarContent = document.querySelector("#sideBarContent");
+const addRecordBtn = document.querySelector("#addRecordBtn");
 
 // Events
+window.addEventListener("load", () => {
+  const records = JSON.parse(localStorage.getItem("EMI-Records"));
+  state.records = !!records ? records : [];
+});
+
 loanDateInput.addEventListener("input", (e) => {
-  state.loanDate = e.target.value;
+  state.loanDetails.loanDate = e.target.value;
 });
 
 loanAmountInput.addEventListener("input", (e) => {
   const loanAmount = e.target.value;
 
-  if (loanAmount === "." && state.loanAmount === "") {
-    state.loanAmount = "0.";
-    return (loanAmountInput.value = state.loanAmount);
+  if (loanAmount === "." && state.loanDetails.loanAmount === "") {
+    state.loanDetails.loanAmount = "0.";
+    return (loanAmountInput.value = state.loanDetails.loanAmount);
   }
 
   if (!loanAmount || loanAmount.match(/^\d{1,}(\.\d{0,2})?$/)) {
-    return (state.loanAmount = parseFloat(e.target.value));
+    return (state.loanDetails.loanAmount = parseFloat(e.target.value));
   }
 
-  loanAmountInput.value = state.loanAmount;
+  loanAmountInput.value = state.loanDetails.loanAmount;
 });
 
 rateOfInterestInput.addEventListener("input", (e) => {
   const rateOfInterest = e.target.value;
 
-  if (rateOfInterest === "." && state.rateOfInterest === "") {
-    state.rateOfInterest = "0.";
-    return (rateOfInterestInput.value = state.rateOfInterest);
+  if (rateOfInterest === "." && state.loanDetails.rateOfInterest === "") {
+    state.loanDetails.rateOfInterest = "0.";
+    return (rateOfInterestInput.value = state.loanDetails.rateOfInterest);
   }
 
   if (!rateOfInterest || rateOfInterest.match(/^\d{1,}(\.\d{0,2})?$/)) {
-    return (state.rateOfInterest = parseFloat(e.target.value));
+    return (state.loanDetails.rateOfInterest = parseFloat(e.target.value));
   }
 
-  rateOfInterestInput.value = state.rateOfInterest;
+  rateOfInterestInput.value = state.loanDetails.rateOfInterest;
 });
 
 tenureInput.addEventListener("input", (e) => {
-  state.tenure = parseFloat(e.target.value);
+  state.loanDetails.tenure = parseFloat(e.target.value);
 });
 
 form.addEventListener("submit", (e) => {
@@ -80,16 +90,52 @@ form.addEventListener("submit", (e) => {
     window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
   }
 
-  const data = findEMI(state);
-  updateCount(data.EMI, showEMI);
-  showDueDate.innerHTML = data.dueDate;
-  showEndDate.innerHTML = data.endDate;
-  updateCount(data.tenure, showTenure);
-  updateCount(data.EMI * data.tenure - data.loanAmount, showTotalInterest);
-  updateCount(data.EMI * data.tenure, showTotalAmount);
+  state.EMI = findEMI(state.loanDetails);
+  updateCount(state.EMI.EMI, showEMI);
+  showDueDate.innerHTML = state.EMI.dueDate;
+  showEndDate.innerHTML = state.EMI.endDate;
+  updateCount(state.EMI.tenure, showTenure);
+  updateCount(
+    state.EMI.EMI * state.EMI.tenure - state.EMI.loanAmount,
+    showTotalInterest
+  );
+  updateCount(state.EMI.EMI * state.EMI.tenure, showTotalAmount);
+  addRecordBtn.disabled = false;
 });
 
-clearBtn.addEventListener("click", () => form.reset());
+clearBtn.addEventListener("click", () => {
+  form.reset();
+  showEMI.innerHTML = 0;
+  showDueDate.innerHTML = "-";
+  showEndDate.innerHTML = "-";
+  showTenure.innerHTML = 0;
+  showTotalInterest.innerHTML = 0;
+  showTotalAmount.innerHTML = 0;
+  addRecordBtn.disabled = true;
+});
+
+addRecordBtn.addEventListener("click", () => {
+  vex.dialog.open({
+    message: "Enter applicant name:",
+    input: [
+      '<input name="applicantName" type="text" placeholder="Name" required />',
+    ].join(""),
+    buttons: [vex.dialog.buttons.YES, vex.dialog.buttons.NO],
+    callback: function ({ applicantName }) {
+      if (applicantName) {
+        const record = {
+          _id: generateUUID(),
+          applicantName,
+          loanDetails: state.loanDetails,
+          EMI: state.EMI,
+        };
+
+        state.records.push(record);
+        localStorage.setItem("EMI-Records", JSON.stringify(state.records));
+      }
+    },
+  });
+});
 
 viewRecordsBtn.addEventListener("click", () => {
   const mediaMatch = window.matchMedia("(max-width: 736px)");
@@ -126,6 +172,15 @@ const updateCount = (data, element) => {
   };
 
   update();
+};
+
+const generateUUID = () => {
+  return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) =>
+    (
+      c ^
+      (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))
+    ).toString(16)
+  );
 };
 
 const findEMI = (loanDetails) => {
