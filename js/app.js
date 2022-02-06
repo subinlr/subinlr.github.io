@@ -243,6 +243,14 @@ const viewRecord = (_id) => {
         <p>Total Amount</p>
         <p>Rs. <span>${record.EMI.EMI * record.EMI.tenure}</span></p>
       </div>
+    </div>
+    <div class="buttons">
+      <button class="btn-edit">
+        <i class="fa fa-pencil-square" aria-hidden="true"></i> Edit
+      </button>
+      <button class="btn-delete">
+        <i class="fa fa-minus-square" aria-hidden="true"></i> Delete
+      </button>
     </div>`,
     ].join(""),
     buttons: [],

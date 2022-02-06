@@ -179,8 +179,11 @@ img {
   font-weight: 700;
 }
 
-.record > .buttons {
+.buttons {
+  width: 100%;
+  background: #f8f9fa;
   display: flex;
+  justify-content: space-between;
   align-items: center;
 }
 
@@ -352,17 +355,25 @@ a.brand-logo {
 }
 
 .btn-edit {
+  width: 49%;
   border: none;
-  background: #f8f9fa;
-  color: var(--primary-color);
-  font-size: 24px;
+  color: #ffffff;
+  background: var(--primary-color);
+  font-size: 18px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 8px;
 }
 
 .btn-delete {
+  width: 49%;
   border: none;
-  background: #f8f9fa;
-  color: var(--danger-color);
-  font-size: 24px;
+  color: #ffffff;
+  background: var(--danger-color);
+  font-size: 18px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 8px;
 }
 
 .btn-find {
@@ -455,6 +466,10 @@ a.brand-logo {
 .loan-details {
   background: #f8f9fa;
   padding: 0.4rem 1rem;
+}
+
+.vex-dialog-input {
+  margin: 0 !important;
 }
 
 .detail {
