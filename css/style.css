@@ -144,8 +144,13 @@ img {
 }
 
 .sidebar-header {
+  padding: 0 8px 24px 8px;
   display: flex;
   align-items: center;
+}
+
+.sidebar-body {
+  padding: 8px;
 }
 
 .records-title {
@@ -153,6 +158,30 @@ img {
   padding: 0 12px 0 0;
   text-transform: uppercase;
   color: #000000;
+}
+
+.record {
+  background: #f8f9fa;
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 12px 0;
+}
+
+.record:hover {
+  transform: scale(1.04);
+  transition: 0.2s ease-in-out;
+}
+
+.record > div > p {
+  font-weight: 700;
+}
+
+.record > .buttons {
+  display: flex;
+  align-items: center;
 }
 
 .calculatorform {
@@ -322,6 +351,20 @@ a.brand-logo {
   opacity: 0.8;
 }
 
+.btn-edit {
+  border: none;
+  background: #f8f9fa;
+  color: var(--primary-color);
+  font-size: 24px;
+}
+
+.btn-delete {
+  border: none;
+  background: #f8f9fa;
+  color: var(--danger-color);
+  font-size: 24px;
+}
+
 .btn-find {
   background-color: var(--success-color);
 }
@@ -370,6 +413,18 @@ a.brand-logo {
   font-size: 1.8rem;
 }
 
+.record-title {
+  color: #000000;
+  font-size: 1.2rem;
+  margin-top: 24px;
+}
+
+.record-name {
+  text-transform: uppercase;
+  font-weight: 900;
+  color: var(--primary-color);
+}
+
 .display {
   height: 45vh;
   display: flex;
@@ -384,6 +439,16 @@ a.brand-logo {
   align-items: center;
   justify-content: center;
   height: 20vh;
+  width: 100%;
+}
+
+.record-result {
+  color: #000000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 36px 0;
   width: 100%;
 }
 

@@ -36,11 +36,16 @@ const viewRecordsBtn = document.querySelector("#viewRecordsBtn");
 const closeRecordsBtn = document.querySelector("#closeRecordsBtn");
 const sideBarContent = document.querySelector("#sideBarContent");
 const addRecordBtn = document.querySelector("#addRecordBtn");
+const recordsContainer = document.querySelector("#recordsContainer");
+
+// Templates
+const recordTemplate = document.querySelector("#recordTemplate").innerHTML;
 
 // Events
 window.addEventListener("load", () => {
   const records = JSON.parse(localStorage.getItem("EMI-Records"));
   state.records = !!records ? records : [];
+  renderRecords();
 });
 
 loanDateInput.addEventListener("input", (e) => {
@@ -118,7 +123,7 @@ addRecordBtn.addEventListener("click", () => {
   vex.dialog.open({
     message: "Enter applicant name:",
     input: [
-      '<input name="applicantName" type="text" placeholder="Name" required />',
+      '<input name="applicantName" type="text" placeholder="Name" autocomplete="off" required />',
     ].join(""),
     buttons: [vex.dialog.buttons.YES, vex.dialog.buttons.NO],
     callback: function ({ applicantName }) {
@@ -132,6 +137,7 @@ addRecordBtn.addEventListener("click", () => {
 
         state.records.push(record);
         localStorage.setItem("EMI-Records", JSON.stringify(state.records));
+        renderRecords();
       }
     },
   });
@@ -181,6 +187,66 @@ const generateUUID = () => {
       (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))
     ).toString(16)
   );
+};
+
+const renderRecords = () => {
+  recordsContainer.innerHTML = "";
+  state.records.map((record) => {
+    const html = Mustache.render(recordTemplate, record);
+    recordsContainer.insertAdjacentHTML("beforeend", html);
+  });
+};
+
+const viewRecord = (_id) => {
+  const [record] = state.records.filter((record) => record._id === _id);
+  vex.dialog.open({
+    input: [
+      `<div class="text-center record-name">
+        <p>EMI Details of ${record.applicantName}</p>
+      </div>
+      <div class="record-title text-center">
+        <h1>EMI</h1>
+      </div>
+      <div class="record-result">
+        <h2>Rs. <span>${record.EMI.EMI}</span> / Month</h2>
+      </div>
+      <div class="loan-details">
+      <div class="detail">
+        <p>Loan Date</p>
+        <p>${moment(record.loanDetails.loanDate, "YYYY-MM-DD").format(
+          "MMMM Do YYYY"
+        )}</p>
+      </div>
+      <div class="detail">
+        <p>Due Date</p>
+        <p>${record.EMI.dueDate}</p>
+      </div>
+      <div class="detail">
+        <p>End Date</p>
+        <p>${record.EMI.endDate}</p>
+      </div>
+      <div class="detail">
+        <p>Tenure</p>
+        <p>${record.EMI.tenure}</p>
+      </div>
+      <div class="detail">
+        <p>Loan Amount</p>
+        <p>Rs. <span>${record.EMI.loanAmount}</span></p>
+      </div>
+      <div class="detail">
+        <p>Total Interest</p>
+        <p>Rs. <span>${
+          record.EMI.EMI * record.EMI.tenure - record.EMI.loanAmount
+        }</span></p>
+      </div>
+      <div class="detail">
+        <p>Total Amount</p>
+        <p>Rs. <span>${record.EMI.EMI * record.EMI.tenure}</span></p>
+      </div>
+    </div>`,
+    ].join(""),
+    buttons: [],
+  });
 };
 
 const findEMI = (loanDetails) => {

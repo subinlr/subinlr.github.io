@@ -23,13 +23,14 @@
       media="all"
     />
 
-    <!-- VexJS -->
-    <script src="js/vex.combined.js"></script>
-    <script>vex.defaultOptions.className = 'vex-theme-os'</script>
-
     <!-- Vex Stylesheet -->
     <link rel="stylesheet" href="css/vex.css" type="text/css" media="all" />
-    <link rel="stylesheet" href="css/vex-theme-os.css" type="text/css" media="all" />
+    <link
+      rel="stylesheet"
+      href="css/vex-theme-os.css"
+      type="text/css"
+      media="all"
+    />
 
     <!-- CSS Stylesheet -->
     <link rel="stylesheet" href="css/style.css" type="text/css" media="all" />
@@ -47,6 +48,7 @@
           </button>
           <h1 class="records-title">Records</h1>
         </div>
+        <div class="sidebar-body" id="recordsContainer"></div>
       </div>
     </div>
     <div class="main-block calculatorform">
@@ -157,7 +159,9 @@
                 <p>Rs. <span id="showTotalAmount">0</span></p>
               </div>
               <div>
-                <button class="btn-add" id="addRecordBtn" disabled>Add new record</button>
+                <button class="btn-add" id="addRecordBtn" disabled>
+                  Add new record
+                </button>
               </div>
             </div>
           </div>
@@ -174,11 +178,36 @@
       <!-- footer -->
     </div>
 
+    <script id="recordTemplate" type="text/html">
+      <div class="record" onclick="viewRecord('{{_id}}')">
+        <div>
+          <p>{{applicantName}}</p>
+        </div>
+        <div class="buttons">
+          <button class="btn-edit">
+            <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+          </button>
+          <button class="btn-delete">
+            <i class="fa fa-minus-square" aria-hidden="true"></i>
+          </button>
+        </div>
+      </div>
+    </script>
+
+    <!-- MustacheJS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mustache.js/3.0.1/mustache.min.js"></script>
+
     <!-- fontawesome v5-->
     <script src="js/fontawesome.js"></script>
 
     <!-- MomentJS -->
     <script src="js/moment.js"></script>
+
+    <!-- VexJS -->
+    <script src="js/vex.combined.js"></script>
+    <script>
+      vex.defaultOptions.className = "vex-theme-os";
+    </script>
 
     <!-- Local JS -->
     <script src="js/app.js"></script>
