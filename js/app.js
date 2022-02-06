@@ -27,6 +27,10 @@ const showTenure = document.querySelector("#showTenure");
 const showTotalInterest = document.querySelector("#showTotalInterest");
 const showTotalAmount = document.querySelector("#showTotalAmount");
 const clearBtn = document.querySelector("#clearBtn");
+const sideBar = document.querySelector("#sideBar");
+const viewRecordsBtn = document.querySelector("#viewRecordsBtn");
+const closeRecordsBtn = document.querySelector("#closeRecordsBtn");
+const sideBarContent = document.querySelector("#sideBarContent");
 
 // Events
 loanDateInput.addEventListener("input", (e) => {
@@ -86,6 +90,21 @@ form.addEventListener("submit", (e) => {
 });
 
 clearBtn.addEventListener("click", () => form.reset());
+
+viewRecordsBtn.addEventListener("click", () => {
+  const mediaMatch = window.matchMedia("(max-width: 736px)");
+
+  mediaMatch.matches
+    ? (sideBar.style.width = "100%")
+    : (sideBar.style.width = "20%");
+
+  sideBarContent.style.opacity = "1";
+});
+
+closeRecordsBtn.addEventListener("click", () => {
+  sideBarContent.style.opacity = "0";
+  sideBar.style.width = "0";
+});
 
 // Functions
 const updateCount = (data, element) => {
