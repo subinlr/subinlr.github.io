@@ -153,6 +153,9 @@ img {
   padding: 8px;
   opacity: 0;
   transition: 0.4s ease-in-out;
+  max-height: 90vh;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .records-title {
