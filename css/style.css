@@ -161,13 +161,12 @@ img {
 }
 
 .record {
+  align-items: center;
   background: #f8f9fa;
-  cursor: pointer;
-  padding: 8px;
   display: flex;
   justify-content: space-between;
-  align-items: center;
   margin: 12px 0;
+  padding: 0 8px;
 }
 
 .record:hover {
@@ -175,16 +174,20 @@ img {
   transition: 0.2s ease-in-out;
 }
 
-.record > div > p {
+.view-record {
+  cursor: pointer;
+  flex-grow: 1;
+  padding: 8px 0;
+}
+
+.view-record > p {
   font-weight: 700;
 }
 
 .buttons {
-  width: 100%;
-  background: #f8f9fa;
+  align-items: center;
   display: flex;
   justify-content: space-between;
-  align-items: center;
 }
 
 .calculatorform {
@@ -355,22 +358,20 @@ a.brand-logo {
 }
 
 .btn-edit {
-  width: 49%;
   border: none;
-  color: #ffffff;
-  background: var(--primary-color);
-  font-size: 18px;
+  background: #f8f9fa;
+  color: var(--primary-color);
+  font-size: 24px;
   font-weight: 700;
   text-transform: uppercase;
   padding: 8px;
 }
 
 .btn-delete {
-  width: 49%;
   border: none;
-  color: #ffffff;
-  background: var(--danger-color);
-  font-size: 18px;
+  background: #f8f9fa;
+  color: var(--danger-color);
+  font-size: 24px;
   font-weight: 700;
   text-transform: uppercase;
   padding: 8px;

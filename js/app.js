@@ -122,6 +122,7 @@ clearBtn.addEventListener("click", () => {
 addRecordBtn.addEventListener("click", () => {
   vex.dialog.open({
     message: "Enter applicant name:",
+    overlayClosesOnClick: false,
     input: [
       '<input name="applicantName" type="text" placeholder="Name" autocomplete="off" required />',
     ].join(""),
@@ -193,7 +194,7 @@ const renderRecords = () => {
   recordsContainer.innerHTML = "";
   state.records.map((record) => {
     const html = Mustache.render(recordTemplate, record);
-    recordsContainer.insertAdjacentHTML("beforeend", html);
+    recordsContainer.insertAdjacentHTML("afterend", html);
   });
 };
 
@@ -243,17 +244,25 @@ const viewRecord = (_id) => {
         <p>Total Amount</p>
         <p>Rs. <span>${record.EMI.EMI * record.EMI.tenure}</span></p>
       </div>
-    </div>
-    <div class="buttons">
-      <button class="btn-edit">
-        <i class="fa fa-pencil-square" aria-hidden="true"></i> Edit
-      </button>
-      <button class="btn-delete">
-        <i class="fa fa-minus-square" aria-hidden="true"></i> Delete
-      </button>
     </div>`,
     ].join(""),
     buttons: [],
+  });
+};
+
+const deleteRecord = (_id) => {
+  vex.dialog.open({
+    message: "Are you sure you want to delete this record?",
+    overlayClosesOnClick: false,
+    callback: function (value) {
+      if (value) {
+        const records = state.records.filter((record) => record._id !== _id);
+        state.records = records;
+        localStorage.setItem("EMI-Records", JSON.stringify(records));
+        renderRecords();
+      }
+    },
+    buttons: [vex.dialog.buttons.YES, vex.dialog.buttons.NO],
   });
 };
 
