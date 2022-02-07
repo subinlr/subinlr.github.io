@@ -161,10 +161,7 @@ img {
 }
 
 .record {
-  align-items: center;
   background: #f8f9fa;
-  display: flex;
-  justify-content: space-between;
   margin: 12px 0;
   padding: 0 8px;
 }
@@ -174,10 +171,21 @@ img {
   transition: 0.2s ease-in-out;
 }
 
+.time-stamp {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+.record-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
 .view-record {
   cursor: pointer;
   flex-grow: 1;
-  padding: 8px 0;
 }
 
 .view-record > p {

@@ -180,16 +180,19 @@
 
     <script id="recordTemplate" type="text/html">
       <div class="record">
-        <div class="view-record" onclick="viewRecord('{{_id}}')">
-          <p>{{applicantName}}</p>
-        </div>
-        <div class="buttons">
-          <button class="btn-edit">
-            <i class="fa fa-pencil-square" aria-hidden="true"></i>
-          </button>
-          <button class="btn-delete" onclick="deleteRecord('{{_id}}')">
-            <i class="fa fa-minus-square" aria-hidden="true"></i>
-          </button>
+        <div class="record-content">
+          <div class="view-record" onclick="viewRecord('{{_id}}')">
+            <p class="time-stamp">{{createdAt}}</p>
+            <p>{{applicantName}}</p>
+          </div>
+          <div class="buttons">
+            <button class="btn-edit">
+              <i class="fa fa-pencil-square" aria-hidden="true"></i>
+            </button>
+            <button class="btn-delete" onclick="deleteRecord('{{_id}}')">
+              <i class="fa fa-minus-square" aria-hidden="true"></i>
+            </button>
+          </div>
         </div>
       </div>
     </script>

@@ -134,6 +134,7 @@ addRecordBtn.addEventListener("click", () => {
           applicantName,
           loanDetails: state.loanDetails,
           EMI: state.EMI,
+          createdAt: moment().format("LLL"),
         };
 
         state.records.push(record);
@@ -191,10 +192,10 @@ const generateUUID = () => {
 };
 
 const renderRecords = () => {
-  recordsContainer.innerHTML = "";
+  recordsContainer.innerHTML = null;
   state.records.map((record) => {
     const html = Mustache.render(recordTemplate, record);
-    recordsContainer.insertAdjacentHTML("afterend", html);
+    recordsContainer.insertAdjacentHTML("afterbegin", html);
   });
 };
 
