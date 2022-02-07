@@ -34,7 +34,6 @@ const clearBtn = document.querySelector("#clearBtn");
 const sideBar = document.querySelector("#sideBar");
 const viewRecordsBtn = document.querySelector("#viewRecordsBtn");
 const closeRecordsBtn = document.querySelector("#closeRecordsBtn");
-const sideBarContent = document.querySelector("#sideBarContent");
 const addRecordBtn = document.querySelector("#addRecordBtn");
 const recordsContainer = document.querySelector("#recordsContainer");
 
@@ -150,14 +149,18 @@ viewRecordsBtn.addEventListener("click", () => {
 
   mediaMatch.matches
     ? (sideBar.style.width = "100%")
-    : (sideBar.style.width = "20%");
+    : (sideBar.style.width = "30rem");
 
-  sideBarContent.style.opacity = "1";
+  setTimeout(() => {
+    recordsContainer.style.opacity = "1";
+  }, 400);
 });
 
 closeRecordsBtn.addEventListener("click", () => {
-  sideBarContent.style.opacity = "0";
-  sideBar.style.width = "0";
+  recordsContainer.style.opacity = "0";
+  setTimeout(() => {
+    sideBar.style.width = "0";
+  }, 400);
 });
 
 // Functions
