@@ -355,15 +355,15 @@ a.brand-logo {
 }
 
 .btn-style {
-  font-size: 18px;
-  line-height: 28px;
-  font-weight: 600;
-  color: rgb(255, 255, 255);
-  padding: 12px 40px;
-  transition: all 0.3s ease-in 0s;
   border: none;
-  border-radius: var(--border-radius-full);
-  width: 48%;
+  width: 100%;
+  padding: 12px;
+  font-size: 18px;
+  font-weight: 700;
+  width: 49%;
+  color: #ffffff;
+  line-height: 28px;
+  transition: all 0.3s ease-in 0s;
 }
 
 .btn-style:hover {
@@ -378,6 +378,11 @@ a.brand-logo {
   font-weight: 700;
   text-transform: uppercase;
   padding: 8px;
+  transition: all 0.3s ease-in 0s;
+}
+
+.btn-edit:hover {
+  opacity: 0.8;
 }
 
 .btn-delete {
@@ -388,6 +393,11 @@ a.brand-logo {
   font-weight: 700;
   text-transform: uppercase;
   padding: 8px;
+  transition: all 0.3s ease-in 0s;
+}
+
+.btn-delete:hover {
+  opacity: 0.8;
 }
 
 .btn-find {
@@ -404,6 +414,43 @@ a.brand-logo {
   padding: 12px;
   font-size: 18px;
   font-weight: 700;
+  transition: all 0.3s ease-in 0s;
+}
+
+.btn-add:hover {
+  opacity: 0.8;
+}
+
+.btn-cancel {
+  border: none;
+  width: 100%;
+  padding: 12px;
+  font-size: 18px;
+  font-weight: 700;
+  width: 49%;
+  color: #ffffff;
+  background: var(--danger-color);
+  transition: all 0.3s ease-in 0s;
+}
+
+.btn-cancel:hover {
+  opacity: 0.8;
+}
+
+.btn-save {
+  border: none;
+  width: 100%;
+  padding: 12px;
+  font-size: 18px;
+  font-weight: 700;
+  width: 49%;
+  color: #ffffff;
+  background: var(--success-color);
+  transition: all 0.3s ease-in 0s;
+}
+
+.btn-save:hover {
+  opacity: 0.8;
 }
 
 .btn-records {

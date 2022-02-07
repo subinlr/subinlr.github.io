@@ -16,6 +16,7 @@ const state = {
   },
   EMI: null,
   records: [],
+  onEditRecord: false,
 };
 
 // Elements
@@ -36,9 +37,13 @@ const viewRecordsBtn = document.querySelector("#viewRecordsBtn");
 const closeRecordsBtn = document.querySelector("#closeRecordsBtn");
 const addRecordBtn = document.querySelector("#addRecordBtn");
 const recordsContainer = document.querySelector("#recordsContainer");
+const loanDetailsContainer = document.querySelector("#loanDetailsContainer");
 
 // Templates
 const recordTemplate = document.querySelector("#recordTemplate").innerHTML;
+const editButtonsTemplate = document.querySelector(
+  "#editButtonsTemplate"
+).innerHTML;
 
 // Events
 window.addEventListener("load", () => {
@@ -108,14 +113,7 @@ form.addEventListener("submit", (e) => {
 });
 
 clearBtn.addEventListener("click", () => {
-  form.reset();
-  showEMI.innerHTML = 0;
-  showDueDate.innerHTML = "-";
-  showEndDate.innerHTML = "-";
-  showTenure.innerHTML = 0;
-  showTotalInterest.innerHTML = 0;
-  showTotalAmount.innerHTML = 0;
-  addRecordBtn.disabled = true;
+  clearScreen();
 });
 
 addRecordBtn.addEventListener("click", () => {
@@ -139,6 +137,15 @@ addRecordBtn.addEventListener("click", () => {
         state.records.push(record);
         localStorage.setItem("EMI-Records", JSON.stringify(state.records));
         renderRecords();
+
+        iziToast.show({
+          title: "Successfully added.",
+          titleColor: "#ffffff",
+          titleSize: "18px",
+          icon: "fa fa-check",
+          iconColor: "#ffffff",
+          backgroundColor: "#00c853",
+        });
       }
     },
   });
@@ -183,6 +190,17 @@ const updateCount = (data, element) => {
   };
 
   update();
+};
+
+const clearScreen = () => {
+  form.reset();
+  showEMI.innerHTML = 0;
+  showDueDate.innerHTML = "-";
+  showEndDate.innerHTML = "-";
+  showTenure.innerHTML = 0;
+  showTotalInterest.innerHTML = 0;
+  showTotalAmount.innerHTML = 0;
+  addRecordBtn.disabled = true;
 };
 
 const generateUUID = () => {
@@ -254,6 +272,103 @@ const viewRecord = (_id) => {
   });
 };
 
+const editRecord = (_id) => {
+  if (state.onEditRecord) {
+    return vex.dialog.open({
+      message:
+        "Save or cancel currently editing record before editing a new record.",
+      callback: function (value) {
+        if (value) {
+          recordsContainer.style.opacity = "0";
+          setTimeout(() => {
+            sideBar.style.width = "0";
+          }, 400);
+        }
+      },
+      buttons: [vex.dialog.buttons.YES],
+    });
+  }
+
+  recordsContainer.style.opacity = "0";
+  setTimeout(() => {
+    sideBar.style.width = "0";
+  }, 400);
+
+  const [record] = state.records.filter((record) => record._id === _id);
+  state.onEditRecord = true;
+  state.loanDetails = record.loanDetails;
+  state.EMI = record.EMI;
+
+  updateCount(state.EMI.EMI, showEMI);
+  showDueDate.innerHTML = state.EMI.dueDate;
+  showEndDate.innerHTML = state.EMI.endDate;
+  updateCount(state.EMI.tenure, showTenure);
+  updateCount(
+    state.EMI.EMI * state.EMI.tenure - state.EMI.loanAmount,
+    showTotalInterest
+  );
+  updateCount(state.EMI.EMI * state.EMI.tenure, showTotalAmount);
+
+  loanDateInput.value = state.loanDetails.loanDate;
+  loanAmountInput.value = state.loanDetails.loanAmount;
+  rateOfInterestInput.value = state.loanDetails.rateOfInterest;
+  tenureInput.value = state.loanDetails.tenure;
+
+  addRecordBtn.hidden = true;
+  const html = Mustache.render(editButtonsTemplate, record);
+  loanDetailsContainer.insertAdjacentHTML("beforeend", html);
+};
+
+const saveRecord = (_id) => {
+  const [record] = state.records.filter((record) => record._id === _id);
+  const records = state.records.filter((record) => record._id !== _id);
+
+  records.push({
+    ...record,
+    loanDetails: state.loanDetails,
+    EMI: state.EMI,
+    createdAt: moment().format("LLL"),
+  });
+
+  state.onEditRecord = false;
+
+  const editActionButtons = document.querySelector("#editActionButtons");
+  editActionButtons.parentNode.removeChild(editActionButtons);
+  addRecordBtn.hidden = false;
+  clearScreen();
+
+  iziToast.show({
+    title: "Successfully saved.",
+    titleColor: "#ffffff",
+    titleSize: "18px",
+    icon: "fa fa-check",
+    iconColor: "#ffffff",
+    backgroundColor: "#00c853",
+  });
+
+  state.records = records;
+  localStorage.setItem("EMI-Records", JSON.stringify(records));
+  renderRecords();
+};
+
+const cancelEditRecord = () => {
+  state.onEditRecord = false;
+
+  const editActionButtons = document.querySelector("#editActionButtons");
+  editActionButtons.parentNode.removeChild(editActionButtons);
+  addRecordBtn.hidden = false;
+  clearScreen();
+
+  iziToast.show({
+    title: "Successfully cancelled.",
+    titleColor: "#ffffff",
+    titleSize: "18px",
+    icon: "fa fa-check",
+    iconColor: "#ffffff",
+    backgroundColor: "#00c853",
+  });
+};
+
 const deleteRecord = (_id) => {
   vex.dialog.open({
     message: "Are you sure you want to delete this record?",
@@ -264,6 +379,14 @@ const deleteRecord = (_id) => {
         state.records = records;
         localStorage.setItem("EMI-Records", JSON.stringify(records));
         renderRecords();
+        iziToast.show({
+          title: "Successfully deleted.",
+          titleColor: "#ffffff",
+          titleSize: "18px",
+          icon: "fa fa-check",
+          iconColor: "#ffffff",
+          backgroundColor: "#00c853",
+        });
       }
     },
     buttons: [vex.dialog.buttons.YES, vex.dialog.buttons.NO],
