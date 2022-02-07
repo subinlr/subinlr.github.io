@@ -8,10 +8,15 @@ if ("serviceWorker" in navigator) {
 
 // State
 const state = {
-  loanDate: "",
-  loanAmount: "",
-  rateOfInterest: "",
-  tenure: "",
+  loanDetails: {
+    loanDate: "",
+    loanAmount: "",
+    rateOfInterest: "",
+    tenure: "",
+  },
+  EMI: null,
+  records: [],
+  onEditRecord: false,
 };
 
 // Elements
@@ -27,44 +32,62 @@ const showTenure = document.querySelector("#showTenure");
 const showTotalInterest = document.querySelector("#showTotalInterest");
 const showTotalAmount = document.querySelector("#showTotalAmount");
 const clearBtn = document.querySelector("#clearBtn");
+const sideBar = document.querySelector("#sideBar");
+const viewRecordsBtn = document.querySelector("#viewRecordsBtn");
+const closeRecordsBtn = document.querySelector("#closeRecordsBtn");
+const addRecordBtn = document.querySelector("#addRecordBtn");
+const recordsContainer = document.querySelector("#recordsContainer");
+const loanDetailsContainer = document.querySelector("#loanDetailsContainer");
+
+// Templates
+const recordTemplate = document.querySelector("#recordTemplate").innerHTML;
+const editButtonsTemplate = document.querySelector(
+  "#editButtonsTemplate"
+).innerHTML;
 
 // Events
+window.addEventListener("load", () => {
+  const records = JSON.parse(localStorage.getItem("EMI-Records"));
+  state.records = !!records ? records : [];
+  renderRecords();
+});
+
 loanDateInput.addEventListener("input", (e) => {
-  state.loanDate = e.target.value;
+  state.loanDetails.loanDate = e.target.value;
 });
 
 loanAmountInput.addEventListener("input", (e) => {
   const loanAmount = e.target.value;
 
-  if (loanAmount === "." && state.loanAmount === "") {
-    state.loanAmount = "0.";
-    return (loanAmountInput.value = state.loanAmount);
+  if (loanAmount === "." && state.loanDetails.loanAmount === "") {
+    state.loanDetails.loanAmount = "0.";
+    return (loanAmountInput.value = state.loanDetails.loanAmount);
   }
 
   if (!loanAmount || loanAmount.match(/^\d{1,}(\.\d{0,2})?$/)) {
-    return (state.loanAmount = parseFloat(e.target.value));
+    return (state.loanDetails.loanAmount = parseFloat(e.target.value));
   }
 
-  loanAmountInput.value = state.loanAmount;
+  loanAmountInput.value = state.loanDetails.loanAmount;
 });
 
 rateOfInterestInput.addEventListener("input", (e) => {
   const rateOfInterest = e.target.value;
 
-  if (rateOfInterest === "." && state.rateOfInterest === "") {
-    state.rateOfInterest = "0.";
-    return (rateOfInterestInput.value = state.rateOfInterest);
+  if (rateOfInterest === "." && state.loanDetails.rateOfInterest === "") {
+    state.loanDetails.rateOfInterest = "0.";
+    return (rateOfInterestInput.value = state.loanDetails.rateOfInterest);
   }
 
   if (!rateOfInterest || rateOfInterest.match(/^\d{1,}(\.\d{0,2})?$/)) {
-    return (state.rateOfInterest = parseFloat(e.target.value));
+    return (state.loanDetails.rateOfInterest = parseFloat(e.target.value));
   }
 
-  rateOfInterestInput.value = state.rateOfInterest;
+  rateOfInterestInput.value = state.loanDetails.rateOfInterest;
 });
 
 tenureInput.addEventListener("input", (e) => {
-  state.tenure = parseFloat(e.target.value);
+  state.loanDetails.tenure = parseFloat(e.target.value);
 });
 
 form.addEventListener("submit", (e) => {
@@ -76,16 +99,76 @@ form.addEventListener("submit", (e) => {
     window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
   }
 
-  const data = findEMI(state);
-  updateCount(data.EMI, showEMI);
-  showDueDate.innerHTML = data.dueDate;
-  showEndDate.innerHTML = data.endDate;
-  updateCount(data.tenure, showTenure);
-  updateCount(data.EMI * data.tenure - data.loanAmount, showTotalInterest);
-  updateCount(data.EMI * data.tenure, showTotalAmount);
+  state.EMI = findEMI(state.loanDetails);
+  updateCount(state.EMI.EMI, showEMI);
+  showDueDate.innerHTML = state.EMI.dueDate;
+  showEndDate.innerHTML = state.EMI.endDate;
+  updateCount(state.EMI.tenure, showTenure);
+  updateCount(
+    state.EMI.EMI * state.EMI.tenure - state.EMI.loanAmount,
+    showTotalInterest
+  );
+  updateCount(state.EMI.EMI * state.EMI.tenure, showTotalAmount);
+  addRecordBtn.disabled = false;
 });
 
-clearBtn.addEventListener("click", () => form.reset());
+clearBtn.addEventListener("click", () => {
+  clearScreen();
+});
+
+addRecordBtn.addEventListener("click", () => {
+  vex.dialog.open({
+    message: "Enter applicant name:",
+    overlayClosesOnClick: false,
+    input: [
+      '<input name="applicantName" type="text" placeholder="Name" autocomplete="off" required />',
+    ].join(""),
+    buttons: [vex.dialog.buttons.YES, vex.dialog.buttons.NO],
+    callback: function ({ applicantName }) {
+      if (applicantName) {
+        const record = {
+          _id: generateUUID(),
+          applicantName,
+          loanDetails: state.loanDetails,
+          EMI: state.EMI,
+          createdAt: moment().format("LLL"),
+        };
+
+        state.records.push(record);
+        localStorage.setItem("EMI-Records", JSON.stringify(state.records));
+        renderRecords();
+
+        iziToast.show({
+          title: "Successfully added.",
+          titleColor: "#ffffff",
+          titleSize: "18px",
+          icon: "fa fa-check",
+          iconColor: "#ffffff",
+          backgroundColor: "#00c853",
+        });
+      }
+    },
+  });
+});
+
+viewRecordsBtn.addEventListener("click", () => {
+  const mediaMatch = window.matchMedia("(max-width: 736px)");
+
+  mediaMatch.matches
+    ? (sideBar.style.width = "100%")
+    : (sideBar.style.width = "30rem");
+
+  setTimeout(() => {
+    recordsContainer.style.opacity = "1";
+  }, 400);
+});
+
+closeRecordsBtn.addEventListener("click", () => {
+  recordsContainer.style.opacity = "0";
+  setTimeout(() => {
+    sideBar.style.width = "0";
+  }, 400);
+});
 
 // Functions
 const updateCount = (data, element) => {
@@ -107,6 +190,207 @@ const updateCount = (data, element) => {
   };
 
   update();
+};
+
+const clearScreen = () => {
+  form.reset();
+  showEMI.innerHTML = 0;
+  showDueDate.innerHTML = "-";
+  showEndDate.innerHTML = "-";
+  showTenure.innerHTML = 0;
+  showTotalInterest.innerHTML = 0;
+  showTotalAmount.innerHTML = 0;
+  addRecordBtn.disabled = true;
+};
+
+const generateUUID = () => {
+  return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) =>
+    (
+      c ^
+      (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))
+    ).toString(16)
+  );
+};
+
+const renderRecords = () => {
+  recordsContainer.innerHTML = null;
+  state.records.map((record) => {
+    const html = Mustache.render(recordTemplate, record);
+    recordsContainer.insertAdjacentHTML("afterbegin", html);
+  });
+};
+
+const viewRecord = (_id) => {
+  const [record] = state.records.filter((record) => record._id === _id);
+  vex.dialog.open({
+    input: [
+      `<div class="text-center record-name">
+        <p>EMI Details of ${record.applicantName}</p>
+      </div>
+      <div class="record-title text-center">
+        <h1>EMI</h1>
+      </div>
+      <div class="record-result">
+        <h2>Rs. <span>${record.EMI.EMI}</span> / Month</h2>
+      </div>
+      <div class="loan-details">
+      <div class="detail">
+        <p>Loan Date</p>
+        <p>${moment(record.loanDetails.loanDate, "YYYY-MM-DD").format(
+          "MMMM Do YYYY"
+        )}</p>
+      </div>
+      <div class="detail">
+        <p>Due Date</p>
+        <p>${record.EMI.dueDate}</p>
+      </div>
+      <div class="detail">
+        <p>End Date</p>
+        <p>${record.EMI.endDate}</p>
+      </div>
+      <div class="detail">
+        <p>Tenure</p>
+        <p>${record.EMI.tenure}</p>
+      </div>
+      <div class="detail">
+        <p>Loan Amount</p>
+        <p>Rs. <span>${record.EMI.loanAmount}</span></p>
+      </div>
+      <div class="detail">
+        <p>Total Interest</p>
+        <p>Rs. <span>${
+          record.EMI.EMI * record.EMI.tenure - record.EMI.loanAmount
+        }</span></p>
+      </div>
+      <div class="detail">
+        <p>Total Amount</p>
+        <p>Rs. <span>${record.EMI.EMI * record.EMI.tenure}</span></p>
+      </div>
+    </div>`,
+    ].join(""),
+    buttons: [],
+  });
+};
+
+const editRecord = (_id) => {
+  if (state.onEditRecord) {
+    return vex.dialog.open({
+      message:
+        "Save or cancel currently editing record before editing a new record.",
+      callback: function (value) {
+        if (value) {
+          recordsContainer.style.opacity = "0";
+          setTimeout(() => {
+            sideBar.style.width = "0";
+          }, 400);
+        }
+      },
+      buttons: [vex.dialog.buttons.YES],
+    });
+  }
+
+  recordsContainer.style.opacity = "0";
+  setTimeout(() => {
+    sideBar.style.width = "0";
+  }, 400);
+
+  const [record] = state.records.filter((record) => record._id === _id);
+  state.onEditRecord = true;
+  state.loanDetails = record.loanDetails;
+  state.EMI = record.EMI;
+
+  updateCount(state.EMI.EMI, showEMI);
+  showDueDate.innerHTML = state.EMI.dueDate;
+  showEndDate.innerHTML = state.EMI.endDate;
+  updateCount(state.EMI.tenure, showTenure);
+  updateCount(
+    state.EMI.EMI * state.EMI.tenure - state.EMI.loanAmount,
+    showTotalInterest
+  );
+  updateCount(state.EMI.EMI * state.EMI.tenure, showTotalAmount);
+
+  loanDateInput.value = state.loanDetails.loanDate;
+  loanAmountInput.value = state.loanDetails.loanAmount;
+  rateOfInterestInput.value = state.loanDetails.rateOfInterest;
+  tenureInput.value = state.loanDetails.tenure;
+
+  addRecordBtn.hidden = true;
+  const html = Mustache.render(editButtonsTemplate, record);
+  loanDetailsContainer.insertAdjacentHTML("beforeend", html);
+};
+
+const saveRecord = (_id) => {
+  const [record] = state.records.filter((record) => record._id === _id);
+  const records = state.records.filter((record) => record._id !== _id);
+
+  records.push({
+    ...record,
+    loanDetails: state.loanDetails,
+    EMI: state.EMI,
+    createdAt: moment().format("LLL"),
+  });
+
+  state.onEditRecord = false;
+
+  const editActionButtons = document.querySelector("#editActionButtons");
+  editActionButtons.parentNode.removeChild(editActionButtons);
+  addRecordBtn.hidden = false;
+  clearScreen();
+
+  iziToast.show({
+    title: "Successfully saved.",
+    titleColor: "#ffffff",
+    titleSize: "18px",
+    icon: "fa fa-check",
+    iconColor: "#ffffff",
+    backgroundColor: "#00c853",
+  });
+
+  state.records = records;
+  localStorage.setItem("EMI-Records", JSON.stringify(records));
+  renderRecords();
+};
+
+const cancelEditRecord = () => {
+  state.onEditRecord = false;
+
+  const editActionButtons = document.querySelector("#editActionButtons");
+  editActionButtons.parentNode.removeChild(editActionButtons);
+  addRecordBtn.hidden = false;
+  clearScreen();
+
+  iziToast.show({
+    title: "Successfully cancelled.",
+    titleColor: "#ffffff",
+    titleSize: "18px",
+    icon: "fa fa-check",
+    iconColor: "#ffffff",
+    backgroundColor: "#00c853",
+  });
+};
+
+const deleteRecord = (_id) => {
+  vex.dialog.open({
+    message: "Are you sure you want to delete this record?",
+    overlayClosesOnClick: false,
+    callback: function (value) {
+      if (value) {
+        const records = state.records.filter((record) => record._id !== _id);
+        state.records = records;
+        localStorage.setItem("EMI-Records", JSON.stringify(records));
+        renderRecords();
+        iziToast.show({
+          title: "Successfully deleted.",
+          titleColor: "#ffffff",
+          titleSize: "18px",
+          icon: "fa fa-check",
+          iconColor: "#ffffff",
+          backgroundColor: "#00c853",
+        });
+      }
+    },
+    buttons: [vex.dialog.buttons.YES, vex.dialog.buttons.NO],
+  });
 };
 
 const findEMI = (loanDetails) => {
