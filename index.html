@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Hacker Home - Subin LR</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      background: radial-gradient(circle at center, #010b10 0%, #000 100%);
+      color: #00ffff;
+      font-family: "Courier New", monospace;
+      overflow: hidden;
+    }
+
+    canvas#matrix {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -3;
+    }
+
+    .scanlines {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: repeating-linear-gradient(
+        to bottom,
+        rgba(0, 255, 255, 0.05) 0px,
+        rgba(0, 255, 255, 0.05) 2px,
+        transparent 2px,
+        transparent 4px
+      );
+      z-index: -2;
+      pointer-events: none;
+    }
+
+    .typing {
+      margin-top: 50px;
+      text-align: center;
+      font-size: 28px;
+      font-weight: bold;
+      white-space: pre;
+      color: #00ffff;
+      text-shadow: 0 0 15px #00ffff;
+      min-height: 100px;
+      animation: glow 6s infinite;
+    }
+    @keyframes glow {
+      0% { color: #00ffff; text-shadow: 0 0 15px #00ffff; }
+      25% { color: #00ff66; text-shadow: 0 0 20px #00ff66; }
+      50% { color: #ff00ff; text-shadow: 0 0 20px #ff00ff; }
+      75% { color: #ffff00; text-shadow: 0 0 20px #ffff00; }
+      100% { color: #00ffff; text-shadow: 0 0 15px #00ffff; }
+    }
+
+    .console {
+      background: rgba(0, 20, 20, 0.8);
+      backdrop-filter: blur(4px);
+      padding: 16px;
+      margin: 20px auto;
+      max-width: 800px;
+      height: 200px;
+      overflow: hidden;
+      border: 1px solid #00ffff;
+      border-radius: 8px;
+      font-size: 14px;
+      box-shadow: 0 0 20px #00ffff;
+      color: #00ffff;
+    }
+
+    .search {
+      margin: 30px auto;
+      max-width: 700px;
+      display: flex;
+      border: 1px solid #00ffff;
+      border-radius: 6px;
+      background: rgba(0, 20, 20, 0.9);
+      overflow: hidden;
+    }
+    .search span {
+      padding: 10px;
+      color: #00ffff;
+      background: rgba(0, 50, 50, 0.9);
+    }
+    .search input {
+      flex: 1;
+      padding: 10px;
+      background: transparent;
+      border: none;
+      color: #00ffff;
+      font-family: monospace;
+      outline: none;
+    }
+    .search select, .search button {
+      padding: 10px;
+      border: none;
+      background: rgba(0, 50, 50, 0.9);
+      color: #00ffff;
+      cursor: pointer;
+    }
+
+    .shortcuts {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 20px;
+      max-width: 800px;
+      margin: 20px auto;
+    }
+    .shortcut {
+      text-decoration: none;
+      color: #00ffff;
+      padding: 20px;
+      border: 1px solid #00ffff;
+      border-radius: 12px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 60px;
+      background: rgba(0, 20, 20, 0.7);
+      box-shadow: 0 0 15px #00ffff;
+      transition: all 0.3s;
+      font-weight: bold;
+      text-align: center;
+    }
+    .shortcut:hover {
+      transform: scale(1.1);
+      color: #ff00ff;
+      border-color: #ff00ff;
+      box-shadow: 0 0 20px #ff00ff;
+    }
+
+    .popup {
+      position: absolute;
+      background: rgba(0, 30, 30, 0.9);
+      border: 1px solid;
+      padding: 12px 18px;
+      border-radius: 8px;
+      box-shadow: 0 0 15px;
+      font-size: 14px;
+      opacity: 0;
+      animation: fadeInOut 6s forwards;
+    }
+    @keyframes fadeInOut {
+      0% { opacity: 0; transform: translateY(20px); }
+      10% { opacity: 1; transform: translateY(0); }
+      90% { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0; transform: translateY(-20px); }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="matrix"></canvas>
+  <div class="scanlines"></div>
+
+  <div class="typing" id="typing"></div>
+
+  <div class="console" id="console"></div>
+
+  <form class="search" id="searchForm">
+    <span>subin@lr:~$</span>
+    <input type="text" id="query" placeholder="Type command or search..." />
+    <select id="engine">
+      <option value="https://www.google.com/search?q=">Google</option>
+      <option value="https://duckduckgo.com/?q=">DuckDuckGo</option>
+      <option value="https://www.bing.com/search?q=">Bing</option>
+      <option value="https://www.youtube.com/results?search_query=">YouTube</option>
+    </select>
+    <button type="submit">Go</button>
+  </form>
+
+  <div class="shortcuts">
+    <a href="https://mail.google.com" class="shortcut"><span>/comm/gmail</span></a>
+    <a href="https://github.com" class="shortcut"><span>/tools/github</span></a>
+    <a href="https://www.youtube.com" class="shortcut"><span>/media/youtube</span></a>
+    <a href="https://chat.openai.com" class="shortcut"><span>/ai/chatgpt</span></a>
+    <a href="https://drive.google.com" class="shortcut"><span>/cloud/drive</span></a>
+    <a href="https://calendar.google.com" class="shortcut"><span>/comm/calendar</span></a>
+  </div>
+
+  <script>
+    // Matrix background (fixed readable words)
+    const canvas = document.getElementById('matrix');
+    const ctx = canvas.getContext('2d');
+    canvas.height = window.innerHeight;
+    canvas.width = window.innerWidth;
+
+    const words = [
+      "int", "main()", "{}", "for", "if", "else", "while", "return",
+      "0xDEADBEEF", "sudo", "rm -rf /", "var", "log", "netstat",
+      "ping 127.0.0.1", "ssh root@localhost", "system()", "malloc",
+      "GET /index.html", "200 OK", "POST /login", "DROP TABLE users;",
+      "chmod 777", "SELECT * FROM users;", "openssl enc -aes256"
+    ];
+
+    const fontSize = 16;
+    const columns = Math.floor(canvas.width / fontSize);
+    const drops = Array(columns).fill(1);
+
+    function draw() {
+      ctx.fillStyle = 'rgba(0,0,0,0.25)'; // stronger clear
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.font = fontSize + "px monospace";
+      ctx.fillStyle = "#0FF";
+
+      for (let i = 0; i < drops.length; i++) {
+        const text = words[Math.floor(Math.random() * words.length)];
+        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+        if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+          drops[i] = 0;
+        }
+        drops[i]++;
+      }
+    }
+    setInterval(draw, 50);
+
+    // Typing animation for Subin LR
+    const typingEl = document.getElementById("typing");
+    const typingText = "> Initializing...\n> Welcome, Subin LR\n> Access Granted.";
+    let tIndex = 0;
+    function typeChar() {
+      if (tIndex < typingText.length) {
+        typingEl.textContent += typingText.charAt(tIndex);
+        tIndex++;
+        setTimeout(typeChar, 80);
+      }
+    }
+    typeChar();
+
+    // Console logs
+    const logs = [
+      "[+] Starting Metasploit framework...",
+      "[*] Scanning 192.168.0.0/24...",
+      "[*] Exploit found: EternalBlue (MS17-010)",
+      "[*] Sending payload...",
+      "[+] Session 1 opened (192.168.0.101 -> 192.168.0.5)",
+      "[*] Dumping credentials...",
+      "[+] Cracked password: admin:toor",
+      "[*] Installing persistence...",
+      "[+] Exploit complete. System owned!"
+    ];
+    const consoleBox = document.getElementById('console');
+    let i = 0;
+    function addLog() {
+      if (i < logs.length) {
+        const line = document.createElement('div');
+        line.textContent = logs[i];
+        consoleBox.appendChild(line);
+        i++;
+        setTimeout(addLog, 800);
+        consoleBox.scrollTop = consoleBox.scrollHeight;
+      }
+    }
+    addLog();
+
+    // Dynamic popups
+    const messages = [
+      "[*] Exploit running against 192.168.0.45",
+      "[!] Firewall bypassed successfully",
+      "[+] Credentials dumped: admin:pass123",
+      "[*] Injecting payload...",
+      "[+] 0.034 BTC mined",
+      "[*] Port scan complete: 22, 80, 443 open",
+      "[!] Backdoor installed successfully"
+    ];
+
+    function spawnPopup() {
+      const popup = document.createElement('div');
+      popup.className = 'popup';
+      const colors = ["#00ffff", "#00ff66", "#ff00ff", "#ffff00"];
+      const c = colors[Math.floor(Math.random() * colors.length)];
+      popup.style.borderColor = c;
+      popup.style.color = c;
+      popup.style.boxShadow = `0 0 15px ${c}`;
+
+      popup.textContent = messages[Math.floor(Math.random() * messages.length)];
+      popup.style.top = Math.random() * 80 + "%";
+      popup.style.left = Math.random() * 70 + "%";
+      document.body.appendChild(popup);
+      setTimeout(() => popup.remove(), 6000);
+    }
+    setInterval(spawnPopup, 5000);
+
+    // Search
+    const form = document.getElementById('searchForm');
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const engine = document.getElementById('engine').value;
+      const q = document.getElementById('query').value.trim();
+      if (!q) return;
+      window.location.href = engine + encodeURIComponent(q);
+    });
+  </script>
+</body>
+</html>
