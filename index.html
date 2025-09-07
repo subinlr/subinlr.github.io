@@ -1,302 +1,489 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Hacker Home - Subin LR</title>
-  <style>
-    body {
-      margin: 0;
-      height: 100vh;
-      background: radial-gradient(circle at center, #010b10 0%, #000 100%);
-      color: #00ffff;
-      font-family: "Courier New", monospace;
-      overflow: hidden;
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Hacker Home - Subin LR</title>
+    <style>
+      body {
+        margin: 0;
+        height: 100vh;
+        background: radial-gradient(circle at center, #010b10 0%, #000 100%);
+        color: #00ffff;
+        font-family: "Courier New", monospace;
+        overflow: hidden;
+      }
 
-    canvas#matrix {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: -3;
-    }
+      canvas#matrix {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -3;
+      }
 
-    .scanlines {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: repeating-linear-gradient(
-        to bottom,
-        rgba(0, 255, 255, 0.05) 0px,
-        rgba(0, 255, 255, 0.05) 2px,
-        transparent 2px,
-        transparent 4px
-      );
-      z-index: -2;
-      pointer-events: none;
-    }
+      .scanlines {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: repeating-linear-gradient(
+          to bottom,
+          rgba(0, 255, 255, 0.05) 0px,
+          rgba(0, 255, 255, 0.05) 2px,
+          transparent 2px,
+          transparent 4px
+        );
+        z-index: -2;
+        pointer-events: none;
+      }
 
-    .typing {
-      margin-top: 50px;
-      text-align: center;
-      font-size: 28px;
-      font-weight: bold;
-      white-space: pre;
-      color: #00ffff;
-      text-shadow: 0 0 15px #00ffff;
-      min-height: 100px;
-      animation: glow 6s infinite;
-    }
-    @keyframes glow {
-      0% { color: #00ffff; text-shadow: 0 0 15px #00ffff; }
-      25% { color: #00ff66; text-shadow: 0 0 20px #00ff66; }
-      50% { color: #ff00ff; text-shadow: 0 0 20px #ff00ff; }
-      75% { color: #ffff00; text-shadow: 0 0 20px #ffff00; }
-      100% { color: #00ffff; text-shadow: 0 0 15px #00ffff; }
-    }
-
-    .console {
-      background: rgba(0, 20, 20, 0.8);
-      backdrop-filter: blur(4px);
-      padding: 16px;
-      margin: 20px auto;
-      max-width: 800px;
-      height: 200px;
-      overflow: hidden;
-      border: 1px solid #00ffff;
-      border-radius: 8px;
-      font-size: 14px;
-      box-shadow: 0 0 20px #00ffff;
-      color: #00ffff;
-    }
-
-    .search {
-      margin: 30px auto;
-      max-width: 700px;
-      display: flex;
-      border: 1px solid #00ffff;
-      border-radius: 6px;
-      background: rgba(0, 20, 20, 0.9);
-      overflow: hidden;
-    }
-    .search span {
-      padding: 10px;
-      color: #00ffff;
-      background: rgba(0, 50, 50, 0.9);
-    }
-    .search input {
-      flex: 1;
-      padding: 10px;
-      background: transparent;
-      border: none;
-      color: #00ffff;
-      font-family: monospace;
-      outline: none;
-    }
-    .search select, .search button {
-      padding: 10px;
-      border: none;
-      background: rgba(0, 50, 50, 0.9);
-      color: #00ffff;
-      cursor: pointer;
-    }
-
-    .shortcuts {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 20px;
-      max-width: 800px;
-      margin: 20px auto;
-    }
-    .shortcut {
-      text-decoration: none;
-      color: #00ffff;
-      padding: 20px;
-      border: 1px solid #00ffff;
-      border-radius: 12px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 60px;
-      background: rgba(0, 20, 20, 0.7);
-      box-shadow: 0 0 15px #00ffff;
-      transition: all 0.3s;
-      font-weight: bold;
-      text-align: center;
-    }
-    .shortcut:hover {
-      transform: scale(1.1);
-      color: #ff00ff;
-      border-color: #ff00ff;
-      box-shadow: 0 0 20px #ff00ff;
-    }
-
-    .popup {
-      position: absolute;
-      background: rgba(0, 30, 30, 0.9);
-      border: 1px solid;
-      padding: 12px 18px;
-      border-radius: 8px;
-      box-shadow: 0 0 15px;
-      font-size: 14px;
-      opacity: 0;
-      animation: fadeInOut 6s forwards;
-    }
-    @keyframes fadeInOut {
-      0% { opacity: 0; transform: translateY(20px); }
-      10% { opacity: 1; transform: translateY(0); }
-      90% { opacity: 1; transform: translateY(0); }
-      100% { opacity: 0; transform: translateY(-20px); }
-    }
-  </style>
-</head>
-<body>
-  <canvas id="matrix"></canvas>
-  <div class="scanlines"></div>
-
-  <div class="typing" id="typing"></div>
-
-  <div class="console" id="console"></div>
-
-  <form class="search" id="searchForm">
-    <span>subin@lr:~$</span>
-    <input type="text" id="query" placeholder="Type command or search..." />
-    <select id="engine">
-      <option value="https://www.google.com/search?q=">Google</option>
-      <option value="https://duckduckgo.com/?q=">DuckDuckGo</option>
-      <option value="https://www.bing.com/search?q=">Bing</option>
-      <option value="https://www.youtube.com/results?search_query=">YouTube</option>
-    </select>
-    <button type="submit">Go</button>
-  </form>
-
-  <div class="shortcuts">
-    <a href="https://mail.google.com" class="shortcut"><span>/comm/gmail</span></a>
-    <a href="https://github.com" class="shortcut"><span>/tools/github</span></a>
-    <a href="https://www.youtube.com" class="shortcut"><span>/media/youtube</span></a>
-    <a href="https://chat.openai.com" class="shortcut"><span>/ai/chatgpt</span></a>
-    <a href="https://drive.google.com" class="shortcut"><span>/cloud/drive</span></a>
-    <a href="https://calendar.google.com" class="shortcut"><span>/comm/calendar</span></a>
-  </div>
-
-  <script>
-    // Matrix background (fixed readable words)
-    const canvas = document.getElementById('matrix');
-    const ctx = canvas.getContext('2d');
-    canvas.height = window.innerHeight;
-    canvas.width = window.innerWidth;
-
-    const words = [
-      "int", "main()", "{}", "for", "if", "else", "while", "return",
-      "0xDEADBEEF", "sudo", "rm -rf /", "var", "log", "netstat",
-      "ping 127.0.0.1", "ssh root@localhost", "system()", "malloc",
-      "GET /index.html", "200 OK", "POST /login", "DROP TABLE users;",
-      "chmod 777", "SELECT * FROM users;", "openssl enc -aes256"
-    ];
-
-    const fontSize = 16;
-    const columns = Math.floor(canvas.width / fontSize);
-    const drops = Array(columns).fill(1);
-
-    function draw() {
-      ctx.fillStyle = 'rgba(0,0,0,0.25)'; // stronger clear
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      ctx.font = fontSize + "px monospace";
-      ctx.fillStyle = "#0FF";
-
-      for (let i = 0; i < drops.length; i++) {
-        const text = words[Math.floor(Math.random() * words.length)];
-        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-
-        if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
-          drops[i] = 0;
+      .typing {
+        margin-top: 50px;
+        text-align: center;
+        font-size: 28px;
+        font-weight: bold;
+        white-space: pre;
+        color: #00ffff;
+        text-shadow: 0 0 15px #00ffff;
+        min-height: 100px;
+        animation: glow 6s infinite;
+      }
+      @keyframes glow {
+        0% {
+          color: #00ffff;
+          text-shadow: 0 0 15px #00ffff;
         }
-        drops[i]++;
+        25% {
+          color: #00ff66;
+          text-shadow: 0 0 20px #00ff66;
+        }
+        50% {
+          color: #ff00ff;
+          text-shadow: 0 0 20px #ff00ff;
+        }
+        75% {
+          color: #ffff00;
+          text-shadow: 0 0 20px #ffff00;
+        }
+        100% {
+          color: #00ffff;
+          text-shadow: 0 0 15px #00ffff;
+        }
       }
-    }
-    setInterval(draw, 50);
 
-    // Typing animation for Subin LR
-    const typingEl = document.getElementById("typing");
-    const typingText = "> Initializing...\n> Welcome, Subin LR\n> Access Granted.";
-    let tIndex = 0;
-    function typeChar() {
-      if (tIndex < typingText.length) {
-        typingEl.textContent += typingText.charAt(tIndex);
-        tIndex++;
-        setTimeout(typeChar, 80);
+      .console {
+        background: rgba(0, 20, 20, 0.8);
+        backdrop-filter: blur(4px);
+        padding: 16px;
+        margin: 20px auto;
+        max-width: 800px;
+        height: 200px;
+        overflow-y: auto; /* keep programmatic scrolling */
+        scrollbar-width: none; /* Firefox - hide scrollbar */
+        -ms-overflow-style: none; /* IE/Edge - hide scrollbar */
+        border: 1px solid #00ffff;
+        border-radius: 8px;
+        font-size: 14px;
+        box-shadow: 0 0 20px #00ffff;
+        color: #00ffff;
+        position: relative;
+        z-index: 2; /* ensure console above background */
       }
-    }
-    typeChar();
+      /* Hide webkit scrollbar (Chrome, Safari, Edge Chromium) */
+      .console::-webkit-scrollbar {
+        width: 0;
+        height: 0;
+      }
 
-    // Console logs
-    const logs = [
-      "[+] Starting Metasploit framework...",
-      "[*] Scanning 192.168.0.0/24...",
-      "[*] Exploit found: EternalBlue (MS17-010)",
-      "[*] Sending payload...",
-      "[+] Session 1 opened (192.168.0.101 -> 192.168.0.5)",
-      "[*] Dumping credentials...",
-      "[+] Cracked password: admin:toor",
-      "[*] Installing persistence...",
-      "[+] Exploit complete. System owned!"
-    ];
-    const consoleBox = document.getElementById('console');
-    let i = 0;
-    function addLog() {
-      if (i < logs.length) {
-        const line = document.createElement('div');
-        line.textContent = logs[i];
+      .search {
+        margin: 30px auto;
+        max-width: 700px;
+        display: flex;
+        border: 1px solid #00ffff;
+        border-radius: 6px;
+        background: rgba(0, 20, 20, 0.9);
+        overflow: hidden;
+        position: relative;
+        z-index: 2;
+      }
+      .search span {
+        padding: 10px;
+        color: #00ffff;
+        background: rgba(0, 50, 50, 0.9);
+      }
+      .search input {
+        flex: 1;
+        padding: 10px;
+        background: transparent;
+        border: none;
+        color: #00ffff;
+        font-family: monospace;
+        outline: none;
+      }
+      .search select,
+      .search button {
+        padding: 10px;
+        border: none;
+        background: rgba(0, 50, 50, 0.9);
+        color: #00ffff;
+        cursor: pointer;
+      }
+
+      .shortcuts {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 20px;
+        max-width: 800px;
+        margin: 20px auto;
+        position: relative;
+        z-index: 2; /* ensure shortcuts visible */
+      }
+      .shortcut {
+        text-decoration: none;
+        color: #00ffff;
+        padding: 20px;
+        border: 1px solid #00ffff;
+        border-radius: 12px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 60px;
+        background: rgba(0, 20, 20, 0.7);
+        box-shadow: 0 0 15px #00ffff;
+        transition: all 0.3s;
+        font-weight: bold;
+        text-align: center;
+      }
+      .shortcut:hover {
+        transform: scale(1.1);
+        color: #ff00ff;
+        border-color: #ff00ff;
+        box-shadow: 0 0 20px #ff00ff;
+      }
+
+      .popup {
+        position: absolute;
+        background: rgba(0, 30, 30, 0.9);
+        border: 1px solid;
+        padding: 12px 18px;
+        border-radius: 8px;
+        box-shadow: 0 0 15px;
+        font-size: 14px;
+        opacity: 0;
+        animation: fadeInOut 6s forwards;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 700;
+        z-index: 9999;
+      }
+      @keyframes fadeInOut {
+        0% {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        10% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+        90% {
+          opacity: 1;
+          transform: translateY(0);
+        }
+        100% {
+          opacity: 0;
+          transform: translateY(-20px);
+        }
+      }
+
+      /* Popup cinematic zoom-in overrides */
+      .popup {
+        animation: none;
+      } /* disable old fade to use new zoom */
+      .popup {
+        transform-origin: center center;
+        transform: scale(0.25) rotate(-12deg);
+        opacity: 0;
+      }
+      @keyframes popupZoom {
+        0% {
+          opacity: 0;
+          transform: scale(0.25) rotate(-18deg);
+          filter: blur(3px);
+        }
+        50% {
+          opacity: 1;
+          transform: scale(1.08) rotate(6deg);
+          filter: blur(0);
+        }
+        100% {
+          opacity: 1;
+          transform: scale(1) rotate(0);
+          filter: none;
+        }
+      }
+      @keyframes shakeX {
+        0% {
+          transform: translateX(0);
+        }
+        20% {
+          transform: translateX(-4px);
+        }
+        40% {
+          transform: translateX(4px);
+        }
+        60% {
+          transform: translateX(-2px);
+        }
+        80% {
+          transform: translateX(2px);
+        }
+        100% {
+          transform: translateX(0);
+        }
+      }
+
+      .popup.warn {
+        box-shadow: 0 0 18px #ffcc00;
+        border-color: #ffcc00;
+        color: #ffea9b;
+      }
+      .popup.err {
+        box-shadow: 0 0 18px #ff4d4d;
+        border-color: #ff4d4d;
+        color: #ffd6d6;
+      }
+      .popup.ok {
+        box-shadow: 0 0 18px #33ffcc;
+        border-color: #33ffcc;
+        color: #ccfff3;
+      }
+
+      /* small helper so popups are positioned absolutely at body level */
+      body > .popup {
+        position: absolute;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="matrix"></canvas>
+    <div class="scanlines"></div>
+
+    <div class="typing" id="typing"></div>
+
+    <div class="console" id="console"></div>
+
+    <form class="search" id="searchForm">
+      <span>subin@lr:~$</span>
+      <input type="text" id="query" placeholder="Type command or search..." />
+      <select id="engine">
+        <option value="https://www.google.com/search?q=">Google</option>
+        <option value="https://duckduckgo.com/?q=">DuckDuckGo</option>
+        <option value="https://www.bing.com/search?q=">Bing</option>
+        <option value="https://www.youtube.com/results?search_query=">
+          YouTube
+        </option>
+      </select>
+      <button type="submit">Go</button>
+    </form>
+
+    <div class="shortcuts">
+      <a href="https://mail.google.com" class="shortcut"
+        ><span>/comm/gmail</span></a
+      >
+      <a href="https://github.com" class="shortcut"
+        ><span>/tools/github</span></a
+      >
+      <a href="https://www.youtube.com" class="shortcut"
+        ><span>/media/youtube</span></a
+      >
+      <a href="https://chat.openai.com" class="shortcut"
+        ><span>/ai/chatgpt</span></a
+      >
+      <a href="https://drive.google.com" class="shortcut"
+        ><span>/cloud/drive</span></a
+      >
+      <a href="https://calendar.google.com" class="shortcut"
+        ><span>/comm/calendar</span></a
+      >
+    </div>
+
+    <script>
+      // Matrix background
+      const canvas = document.getElementById("matrix");
+      const ctx = canvas.getContext("2d");
+      canvas.height = window.innerHeight;
+      canvas.width = window.innerWidth;
+
+      const words = [
+        "int",
+        "main()",
+        "{}",
+        "for",
+        "if",
+        "else",
+        "while",
+        "return",
+        "0xDEADBEEF",
+        "sudo",
+        "rm -rf /",
+        "var",
+        "log",
+        "netstat",
+        "ping 127.0.0.1",
+        "ssh root@localhost",
+        "system()",
+        "malloc",
+        "GET /index.html",
+        "200 OK",
+        "POST /login",
+        "DROP TABLE users;",
+        "chmod 777",
+        "SELECT * FROM users;",
+        "openssl enc -aes256",
+      ];
+
+      const fontSize = 16;
+      const columns = Math.floor(canvas.width / fontSize);
+      const drops = Array(columns).fill(1);
+
+      function draw() {
+        ctx.fillStyle = "rgba(0,0,0,0.25)";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.font = fontSize + "px monospace";
+        ctx.fillStyle = "#0FF";
+
+        for (let i = 0; i < drops.length; i++) {
+          const text = words[Math.floor(Math.random() * words.length)];
+          ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+          if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+            drops[i] = 0;
+          }
+          drops[i]++;
+        }
+      }
+      setInterval(draw, 50);
+
+      // Typing animation
+      const typingEl = document.getElementById("typing");
+      const typingText =
+        "> Initializing...\n> Welcome, Subin LR\n> Access Granted.";
+      let tIndex = 0;
+      function typeChar() {
+        if (tIndex < typingText.length) {
+          typingEl.textContent += typingText.charAt(tIndex);
+          tIndex++;
+          setTimeout(typeChar, 80);
+        }
+      }
+      typeChar();
+
+      // Infinite console logs
+      const consoleBox = document.getElementById("console");
+      const logMessages = [
+        "[+] Starting Metasploit framework...",
+        "[*] Scanning 192.168.0.0/24...",
+        "[*] Exploit found: EternalBlue (MS17-010)",
+        "[*] Sending payload...",
+        "[+] Session opened (192.168.0.101 -> 192.168.0.5)",
+        "[*] Dumping credentials...",
+        "[+] Cracked password: admin:toor",
+        "[!] Error: Connection reset by peer",
+        "[*] Retrying exploit...",
+        "[+] Installing persistence...",
+        "[!] Warning: AV detected, evading...",
+        "[+] Exploit complete. System owned!",
+        "[*] Port scan complete: 22, 80, 443 open",
+        "[+] 0.034 BTC mined...",
+        "[*] Uploading backdoor...",
+        "[!] Firewall bypassed successfully",
+        "[+] Credentials dumped: root:toor123",
+        "[!] Kernel panic simulated!",
+        "[+] Privilege escalation successful!",
+      ];
+
+      function addLogLine() {
+        const line = document.createElement("div");
+        line.textContent =
+          logMessages[Math.floor(Math.random() * logMessages.length)];
         consoleBox.appendChild(line);
-        i++;
-        setTimeout(addLog, 800);
+
+        // ensure latest lines are at bottom (console can still be scrolled internally)
         consoleBox.scrollTop = consoleBox.scrollHeight;
+
+        if (consoleBox.children.length > 200) {
+          // keep DOM light
+          consoleBox.removeChild(consoleBox.firstChild);
+        }
       }
-    }
-    addLog();
+      setInterval(addLogLine, Math.random() * 600 + 600);
 
-    // Dynamic popups
-    const messages = [
-      "[*] Exploit running against 192.168.0.45",
-      "[!] Firewall bypassed successfully",
-      "[+] Credentials dumped: admin:pass123",
-      "[*] Injecting payload...",
-      "[+] 0.034 BTC mined",
-      "[*] Port scan complete: 22, 80, 443 open",
-      "[!] Backdoor installed successfully"
-    ];
+      // Popup messages (zoom-in cinematic)
+      const popupMessages = [
+        {
+          icon: "⚠",
+          cls: "warn",
+          text: "Warning: Firewall bypassed successfully",
+        },
+        { icon: "❌", cls: "err", text: "Error: Reverse shell unstable" },
+        { icon: "🔥", cls: "err", text: "Critical: Kernel panic simulated!" },
+        { icon: "💀", cls: "err", text: "Backdoor installed: root access" },
+        { icon: "✔", cls: "ok", text: "Info: Session established" },
+        { icon: "⚡", cls: "ok", text: "Notice: Privilege escalation success" },
+      ];
 
-    function spawnPopup() {
-      const popup = document.createElement('div');
-      popup.className = 'popup';
-      const colors = ["#00ffff", "#00ff66", "#ff00ff", "#ffff00"];
-      const c = colors[Math.floor(Math.random() * colors.length)];
-      popup.style.borderColor = c;
-      popup.style.color = c;
-      popup.style.boxShadow = `0 0 15px ${c}`;
+      function spawnPopup() {
+        const p = document.createElement("div");
+        const item =
+          popupMessages[Math.floor(Math.random() * popupMessages.length)];
+        p.className = "popup " + item.cls;
+        p.innerHTML = `<span class="icon">${item.icon}</span><span class="msg">${item.text}</span>`;
 
-      popup.textContent = messages[Math.floor(Math.random() * messages.length)];
-      popup.style.top = Math.random() * 80 + "%";
-      popup.style.left = Math.random() * 70 + "%";
-      document.body.appendChild(popup);
-      setTimeout(() => popup.remove(), 6000);
-    }
-    setInterval(spawnPopup, 5000);
+        // pick spawn origin area (cinematic variety)
+        const area = Math.random();
+        if (area < 0.25) {
+          p.style.top = 10 + Math.random() * 30 + "%";
+          p.style.left = 5 + Math.random() * 20 + "%";
+        } else if (area < 0.6) {
+          p.style.top = 20 + Math.random() * 50 + "%";
+          p.style.left = 30 + Math.random() * 40 + "%";
+        } else {
+          p.style.top = 5 + Math.random() * 40 + "%";
+          p.style.left = 60 + Math.random() * 30 + "%";
+        }
 
-    // Search
-    const form = document.getElementById('searchForm');
-    form.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const engine = document.getElementById('engine').value;
-      const q = document.getElementById('query').value.trim();
-      if (!q) return;
-      window.location.href = engine + encodeURIComponent(q);
-    });
-  </script>
-</body>
+        // initial transform for cinematic zoom
+        p.style.transform =
+          "scale(0.25) rotate(" + (Math.random() * -20 + -5) + "deg)";
+        document.body.appendChild(p);
+
+        // animate via keyframe popupZoom
+        p.style.animation = "popupZoom 0.9s cubic-bezier(.2,.9,.2,1) forwards";
+
+        // auto remove after show
+        setTimeout(() => {
+          p.style.transition = "opacity 0.6s ease, transform 0.6s ease";
+          p.style.opacity = "0";
+          p.style.transform = "scale(0.6) translateY(-10px)";
+          setTimeout(() => p.remove(), 700);
+        }, 3200);
+      }
+      setInterval(spawnPopup, 3000 + Math.random() * 3000);
+
+      // Search form
+      const form = document.getElementById("searchForm");
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const engine = document.getElementById("engine").value;
+        const q = document.getElementById("query").value.trim();
+        if (!q) return;
+        window.location.href = engine + encodeURIComponent(q);
+      });
+    </script>
+  </body>
 </html>
