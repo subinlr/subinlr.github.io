@@ -450,6 +450,9 @@
       const columns = Math.floor(canvas.width / fontSize);
       const drops = Array(columns).fill(1);
 
+      // bursts array
+      let bursts = [];
+
       function draw() {
         ctx.fillStyle = "rgba(0,0,0,0.25)";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -457,6 +460,7 @@
         ctx.font = fontSize + "px monospace";
         ctx.fillStyle = "#0FF";
 
+        // matrix rain
         for (let i = 0; i < drops.length; i++) {
           const text = words[Math.floor(Math.random() * words.length)];
           ctx.fillText(text, i * fontSize, drops[i] * fontSize);
@@ -465,6 +469,22 @@
             drops[i] = 0;
           }
           drops[i]++;
+        }
+
+        // render bursts
+        for (let b = bursts.length - 1; b >= 0; b--) {
+          const burst = bursts[b];
+          ctx.fillStyle = "rgba(0,255,255,0.95)";
+          burst.chars.forEach((ch, i) => {
+            ctx.font = "bold " + fontSize + "px monospace";
+            ctx.fillText(
+              ch,
+              burst.col * fontSize + (burst.offsets[i] || 0),
+              (i + 5) * fontSize + (burst.offsets[i] || 0)
+            );
+          });
+          burst.life--;
+          if (burst.life <= 0) bursts.splice(b, 1);
         }
       }
       setInterval(draw, 50);
@@ -512,12 +532,8 @@
         line.textContent =
           logMessages[Math.floor(Math.random() * logMessages.length)];
         consoleBox.appendChild(line);
-
-        // ensure latest lines are at bottom (console can still be scrolled internally)
         consoleBox.scrollTop = consoleBox.scrollHeight;
-
         if (consoleBox.children.length > 200) {
-          // keep DOM light
           consoleBox.removeChild(consoleBox.firstChild);
         }
       }
@@ -544,7 +560,6 @@
         p.className = "popup " + item.cls;
         p.innerHTML = `<span class="icon">${item.icon}</span><span class="msg">${item.text}</span>`;
 
-        // pick spawn origin area (cinematic variety)
         const area = Math.random();
         if (area < 0.25) {
           p.style.top = 10 + Math.random() * 30 + "%";
@@ -557,15 +572,12 @@
           p.style.left = 60 + Math.random() * 30 + "%";
         }
 
-        // initial transform for cinematic zoom
         p.style.transform =
           "scale(0.25) rotate(" + (Math.random() * -20 + -5) + "deg)";
         document.body.appendChild(p);
 
-        // animate via keyframe popupZoom
         p.style.animation = "popupZoom 0.9s cubic-bezier(.2,.9,.2,1) forwards";
 
-        // auto remove after show
         setTimeout(() => {
           p.style.transition = "opacity 0.6s ease, transform 0.6s ease";
           p.style.opacity = "0";
@@ -577,28 +589,64 @@
 
       // Search form
       const form = document.getElementById("searchForm");
+      const input = document.getElementById("query");
+      const engine = document.getElementById("engine");
+
+      const fakeCommands = {
+        help: "Available commands: help, clear, about, hack",
+        about: "This is your interactive hacker console. (Fake environment)",
+        hack: "Initializing hack... Access granted!",
+        clear: "__CLEAR__",
+      };
+
+      function printConsoleLine(text, cls) {
+        const d = document.createElement("div");
+        d.textContent = text;
+        if (cls === "ok") d.style.color = "#33ffcc";
+        else if (cls === "warn") d.style.color = "#ffea9b";
+        else if (cls === "err") d.style.color = "#ffd6d6";
+        else if (cls === "info") d.style.color = "#0ff";
+        consoleBox.appendChild(d);
+        consoleBox.scrollTop = consoleBox.scrollHeight;
+      }
+
       form.addEventListener("submit", (e) => {
         e.preventDefault();
-        const engine = document.getElementById("engine").value;
-        const q = document.getElementById("query").value.trim();
+        const q = input.value.trim();
         if (!q) return;
-        window.location.href = engine + encodeURIComponent(q);
+
+        const lc = q.toLowerCase();
+        if (fakeCommands[lc]) {
+          if (fakeCommands[lc] === "__CLEAR__") {
+            consoleBox.innerHTML = "";
+          } else {
+            printConsoleLine("> " + q, "info");
+            printConsoleLine(fakeCommands[lc], "ok");
+          }
+        } else {
+          printConsoleLine("> Searching: " + q, "warn");
+          const engineUrl = engine.value;
+          window.open(engineUrl + encodeURIComponent(q), "_blank");
+        }
+
+        input.value = "";
       });
 
       // Fullscreen button
       const fsButton = document.getElementById("goFullscreen");
-
-      fsButton.addEventListener("click", () => {
-        if (document.documentElement.requestFullscreen) {
-          document.documentElement.requestFullscreen();
-        } else if (document.documentElement.webkitRequestFullscreen) {
-          document.documentElement.webkitRequestFullscreen(); // Safari
-        } else if (document.documentElement.msRequestFullscreen) {
-          document.documentElement.msRequestFullscreen(); // IE/Edge
-        }
+      // delay requestFullscreen slightly so ripple shows
+      fsButton.addEventListener("click", (ev) => {
+        // if user clicked, ripple handler runs (see below). Wait a bit then request fullscreen.
+        setTimeout(() => {
+          if (document.documentElement.requestFullscreen) {
+            document.documentElement.requestFullscreen();
+          } else if (document.documentElement.webkitRequestFullscreen) {
+            document.documentElement.webkitRequestFullscreen();
+          } else if (document.documentElement.msRequestFullscreen) {
+            document.documentElement.msRequestFullscreen();
+          }
+        }, 90);
       });
-
-      // Hide button when fullscreen starts, show when fullscreen ends
       document.addEventListener("fullscreenchange", () => {
         fsButton.style.display = document.fullscreenElement ? "none" : "block";
       });
@@ -611,6 +659,81 @@
         fsButton.style.display = document.msFullscreenElement
           ? "none"
           : "block";
+      });
+
+      /* ---- EXTRA INTERACTIONS APPENDED ---- */
+
+      // Ripple glow effect on shortcuts & fullscreen button (robust offsets)
+      (function () {
+        document.querySelectorAll(".shortcut, #goFullscreen").forEach((el) => {
+          el.addEventListener("click", function (ev) {
+            const rect = el.getBoundingClientRect();
+            const cx = ev.clientX ?? rect.left + rect.width / 2;
+            const cy = ev.clientY ?? rect.top + rect.height / 2;
+            const offsetX = cx - rect.left;
+            const offsetY = cy - rect.top;
+
+            const ripple = document.createElement("span");
+            ripple.style.position = "absolute";
+            ripple.style.width = ripple.style.height = "120px";
+            ripple.style.background = "rgba(0,255,255,0.35)";
+            ripple.style.borderRadius = "50%";
+            ripple.style.pointerEvents = "none";
+            ripple.style.transform = "scale(0)";
+            ripple.style.left = offsetX - 60 + "px";
+            ripple.style.top = offsetY - 60 + "px";
+            ripple.style.zIndex = 99999;
+            ripple.style.transition = "transform 0.6s ease, opacity 0.6s ease";
+
+            if (getComputedStyle(el).position === "static")
+              el.style.position = "relative";
+            el.appendChild(ripple);
+
+            requestAnimationFrame(() => {
+              ripple.style.transform = "scale(3)";
+              ripple.style.opacity = "0";
+            });
+
+            setTimeout(() => ripple.remove(), 700);
+          });
+        });
+      })();
+
+      // Matrix burst effect: listen globally but ignore clicks on UI elements
+      document.addEventListener("click", (e) => {
+        // find the element under the click
+        const hit = document.elementFromPoint(e.clientX, e.clientY);
+        if (!hit) return;
+
+        // if click was on UI element, ignore (no burst)
+        if (
+          hit.closest(".shortcut") ||
+          hit.closest(".search") ||
+          hit.closest(".console") ||
+          hit.closest(".popup") ||
+          hit.closest("a") ||
+          hit.closest("button")
+        ) {
+          return;
+        }
+
+        // otherwise spawn burst at click column
+        const col = Math.floor(e.clientX / fontSize);
+        const chars = Array.from(
+          { length: 10 },
+          () => words[Math.floor(Math.random() * words.length)]
+        );
+        const offsets = Array.from(
+          { length: 10 },
+          () => Math.random() * 24 - 12
+        );
+        bursts.push({ col, chars, offsets, life: 16 });
+      });
+
+      // Keep canvas fit when resizing
+      window.addEventListener("resize", () => {
+        canvas.height = window.innerHeight;
+        canvas.width = window.innerWidth;
       });
     </script>
   </body>
