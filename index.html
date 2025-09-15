@@ -1569,5 +1569,123 @@
         </div>
       </div>
     </div>
+    <style>
+      /* Hide scrollbar but allow programmatic scrolling */
+      #hp-output {
+        overflow-y: auto !important;
+        -ms-overflow-style: none !important; /* IE/Edge */
+        scrollbar-width: none !important; /* Firefox */
+        box-sizing: border-box;
+      }
+      #hp-output::-webkit-scrollbar {
+        display: none;
+        width: 0;
+        height: 0;
+      }
+
+      /* make sure text doesn't wrap weirdly (optional) */
+      #hp-output pre,
+      #hp-output .line {
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+    </style>
+
+    <script>
+      (function () {
+        const out = document.getElementById("hp-output");
+        if (!out) {
+          console.warn("hp-output not found");
+          return;
+        }
+
+        // Try to find the bottom prompt element so we can add padding equal to its height
+        const findPrompt = () =>
+          document.getElementById("hp-prompt") ||
+          document.querySelector(".hp-prompt") ||
+          document.querySelector(".prompt") ||
+          null;
+        let promptEl = findPrompt();
+
+        // If prompt is created later, watch for it and update
+        const promptObserver = new MutationObserver(() => {
+          promptEl = findPrompt();
+          updatePadding();
+        });
+        promptObserver.observe(document.body, {
+          childList: true,
+          subtree: true,
+        });
+
+        function updatePadding() {
+          const base = 8; // small extra spacing
+          const h =
+            promptEl && promptEl.offsetHeight ? promptEl.offsetHeight : 48;
+          out.style.paddingBottom = h + base + "px";
+        }
+        updatePadding();
+        window.addEventListener("resize", updatePadding);
+
+        // Always scroll newest content into view when new nodes or text are appended.
+        function scrollToBottom(smooth = false) {
+          // prefer scrolling the last element into view for accurate positioning
+          const last = out.lastElementChild || out;
+          try {
+            last.scrollIntoView({
+              behavior: smooth ? "smooth" : "auto",
+              block: "end",
+            });
+          } catch (e) {
+            out.scrollTop = out.scrollHeight;
+          }
+        }
+
+        // Ensure we initially show bottom
+        scrollToBottom(false);
+
+        // MutationObserver to auto-scroll whenever content changes
+        const mo = new MutationObserver((mutList) => {
+          // You can allow the user to scroll up without being forced by checking:
+          // const atBottom = (out.scrollHeight - out.clientHeight - out.scrollTop) < 20;
+          // if (atBottom) scrollToBottom(false);
+          // But per your request we always auto-scroll:
+          scrollToBottom(false);
+        });
+        mo.observe(out, {
+          childList: true,
+          subtree: true,
+          characterData: true,
+        });
+
+        // Wrap appendChild to guarantee scroll for scripts that use appendChild
+        const origAppend = out.appendChild ? out.appendChild.bind(out) : null;
+        if (origAppend) {
+          out.appendChild = function (node) {
+            const res = origAppend(node);
+            scrollToBottom(false);
+            return res;
+          };
+        }
+
+        // If code uses innerHTML += ... replace trick (best-effort)
+        try {
+          const desc = Object.getOwnPropertyDescriptor(
+            Element.prototype,
+            "innerHTML"
+          );
+          if (desc && desc.set) {
+            const origSet = desc.set;
+            Object.defineProperty(out, "innerHTML", {
+              set: function (v) {
+                origSet.call(this, v);
+                scrollToBottom(false);
+              },
+            });
+          }
+        } catch (e) {
+          /* ignore if not allowed */
+        }
+      })();
+    </script>
   </body>
 </html>
