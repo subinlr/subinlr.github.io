@@ -594,19 +594,22 @@
       }
       setInterval(draw, 50);
 
-      // Typing animation
-      const typingEl = document.getElementById("typing");
-      const typingText =
-        "> Initializing...\n> Welcome, Subin LR\n> Access Granted.";
-      let tIndex = 0;
-      function typeChar() {
-        if (tIndex < typingText.length) {
-          typingEl.textContent += typingText.charAt(tIndex);
-          tIndex++;
-          setTimeout(typeChar, 80);
-        }
-      }
-      typeChar();
+     // Typing animation (pure typewriter, single color)
+const typingEl = document.getElementById("typing");
+const typingText =
+  "> Initializing...\n> Welcome, Subin LR\n> Access Granted.";
+let tIndex = 0;
+
+function typeChar() {
+  if (tIndex < typingText.length) {
+    typingEl.textContent += typingText[tIndex]; // add one character
+    tIndex++;
+    setTimeout(typeChar, 80); // speed control
+  }
+}
+
+typeChar();
+
 
       // Infinite console logs
       const consoleBox = document.getElementById("console");
@@ -1689,4 +1692,5 @@
     </script>
   </body>
 </html>
+
 
